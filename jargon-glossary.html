@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JARGON // GLOSSARY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:600px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.25rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  input#search{
+    width:100%; background:var(--panel); border:1px solid var(--gray-line); color:var(--white);
+    padding:12px 14px; font-family:'JetBrains Mono', monospace; font-size:0.9rem; margin-bottom:18px;
+  }
+  input#search:focus{outline:none; border-color:var(--orange);}
+
+  .term-list{display:flex; flex-direction:column; gap:2px;}
+  .term-row{background:var(--panel); border:1px solid var(--gray-line); padding:12px 16px;}
+  .term-name{font-family:'Archivo Black', sans-serif; font-size:0.9rem; text-transform:uppercase; color:var(--orange); margin-bottom:4px;}
+  .term-abbr{font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--gray); margin-left:6px; text-transform:none;}
+  .term-def{font-family:'Archivo', sans-serif; font-size:0.85rem; color:var(--gray); line-height:1.5;}
+  .no-results{text-align:center; color:var(--gray); font-family:'JetBrains Mono', monospace; font-size:0.85rem; padding:30px 0; border:1px dashed var(--gray-line);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Jargon // Glossary</h1>
+    <p class="subtitle">Search any term you hear at the table.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <input type="text" id="search" placeholder="SEARCH A TERM (E.G. 'AC', 'CRIT', 'PROFICIENCY')...">
+
+  <div class="term-list" id="termList"></div>
+  <div class="no-results" id="noResults" style="display:none;">NO MATCHING TERM FOUND</div>
+</div>
+
+<script>
+const TERMS = [
+  { term: 'Armor Class', abbr: 'AC', def: 'How hard you are to hit. An attack roll has to meet or beat your AC to land.' },
+  { term: 'Saving Throw', abbr: 'Save', def: 'A roll to resist or reduce an effect, like a spell or trap.' },
+  { term: 'Proficiency Bonus', abbr: 'Prof', def: "A bonus added to rolls you're trained in — attacks, skills, saves. Grows as you level up." },
+  { term: 'Ability Modifier', abbr: 'Mod', def: 'The number derived from an ability score that you add to related rolls.' },
+  { term: 'Critical Hit', abbr: 'Crit', def: 'Rolling a natural 20 on an attack. Automatically hits, and you roll extra damage dice.' },
+  { term: 'Natural 20 / Natural 1', abbr: 'Nat 20/1', def: 'The literal number on the d20, before modifiers. A natural 1 on an attack always misses.' },
+  { term: 'Difficulty Class', abbr: 'DC', def: 'The number you need to meet or beat on a check or save to succeed.' },
+  { term: 'Hit Points', abbr: 'HP', def: 'How much damage you can take before falling unconscious or dying.' },
+  { term: 'Temporary Hit Points', abbr: 'Temp HP', def: "A buffer that absorbs damage first — doesn't stack with itself." },
+  { term: 'Opportunity Attack', abbr: 'OA', def: 'A free attack (using your Reaction) when an enemy leaves your reach without disengaging.' },
+  { term: 'Passive Perception', abbr: 'PP', def: "A baseline awareness score, used instead of rolling for things you're not actively looking for." },
+  { term: 'Short Rest', abbr: '', def: 'A roughly hour-long break to spend Hit Dice and regain some limited-use abilities.' },
+  { term: 'Long Rest', abbr: '', def: 'About 8 hours of rest that restores all HP, half your Hit Dice, and most abilities like spell slots.' },
+  { term: 'Spell Slot', abbr: '', def: 'A "charge" used to cast a leveled spell.' },
+  { term: 'Cantrip', abbr: '', def: "A spell simple enough it doesn't use a spell slot — cast it as often as you want." },
+  { term: 'Concentration', abbr: '', def: 'Ongoing focus needed for some spells. Taking damage forces a save to keep it up.' },
+  { term: 'Initiative', abbr: '', def: 'A roll at the start of combat (d20 + Dex mod) that sets turn order.' },
+  { term: 'Advantage', abbr: 'Adv', def: 'Roll two d20s, take the higher.' },
+  { term: 'Disadvantage', abbr: 'Dis', def: 'Roll two d20s, take the lower.' },
+  { term: 'Difficult Terrain', abbr: '', def: 'Ground that costs double movement to cross.' },
+  { term: 'Reach', abbr: '', def: 'How far a creature can attack in melee without moving.' },
+  { term: 'Condition', abbr: '', def: 'A status like Prone, Poisoned, or Grappled, each with its own rules.' },
+  { term: 'Death Saving Throw', abbr: '', def: 'A roll at 0 HP — three successes stabilizes you, three failures kills you.' },
+  { term: 'Multiclassing', abbr: '', def: 'Taking levels in more than one class, combining features from both.' }
+];
+
+function render(filter = ''){
+  const list = document.getElementById('termList');
+  const noResults = document.getElementById('noResults');
+  const f = filter.trim().toLowerCase();
+  const filtered = TERMS.filter(t => t.term.toLowerCase().includes(f) || t.abbr.toLowerCase().includes(f) || t.def.toLowerCase().includes(f));
+  if(filtered.length === 0){ list.innerHTML=''; noResults.style.display='block'; return; }
+  noResults.style.display='none';
+  list.innerHTML = filtered.map(t => `
+    <div class="term-row">
+      <div class="term-name">${t.term}${t.abbr ? `<span class="term-abbr">(${t.abbr})</span>` : ''}</div>
+      <div class="term-def">${t.def}</div>
+    </div>`).join('');
+}
+document.getElementById('search').addEventListener('input', (e) => render(e.target.value));
+render();
+</script>
+</body>
+</html>

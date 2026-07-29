@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IS THIS LEGAL // CHECKER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:560px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.25rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  .checklist{display:flex; flex-direction:column; gap:2px; margin-bottom:22px;}
+  .check-row{
+    display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--gray-line);
+    padding:12px 16px; cursor:pointer;
+  }
+  .check-row:hover{border-color:var(--orange);}
+  .checkbox{
+    width:20px; height:20px; border:1px solid var(--gray-line); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono', monospace; font-size:0.8rem;
+  }
+  .checkbox.checked{background:var(--red); border-color:var(--red); color:var(--bg); font-weight:700;}
+  .check-label{font-family:'Archivo', sans-serif; font-size:0.9rem;}
+
+  .status-panel{background:var(--panel); border:1px solid var(--gray-line); padding:18px 20px;}
+  .status-panel h2{font-family:'Archivo Black', sans-serif; font-size:0.9rem; margin:0 0 12px; text-transform:uppercase;}
+  .status-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-family:'JetBrains Mono', monospace; font-size:0.82rem;}
+  .dot{width:8px; height:8px; flex-shrink:0;}
+  .dot.legal{background:var(--orange);}
+  .dot.illegal{background:var(--red);}
+  .status-item.illegal .label{color:var(--gray); text-decoration:line-through;}
+  .status-item.legal .label{color:var(--white);}
+
+  .oa-note{margin-top:16px; padding-top:14px; border-top:1px solid var(--gray-line); font-family:'Archivo', sans-serif; font-size:0.8rem; color:var(--gray); line-height:1.55;}
+  .oa-note b{color:var(--orange);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Is This Legal? // Checker</h1>
+    <p class="subtitle">Check what you've used this turn to see what's left.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="checklist" id="checklist"></div>
+
+  <div class="status-panel">
+    <h2>What You Can Still Do</h2>
+    <div id="statusList"></div>
+    <div class="oa-note">
+      <b>Reminder:</b> walking away from an enemy within reach without Disengaging may trigger a free Opportunity Attack against you — even if you haven't used your own Reaction.
+    </div>
+  </div>
+</div>
+
+<script>
+const checks = [
+  { id: 'moved', label: "I've used all my movement" },
+  { id: 'action', label: "I've taken my Action" },
+  { id: 'bonus', label: "I've used a Bonus Action" },
+  { id: 'reaction', label: "I've used my Reaction (this round)" }
+];
+let state = { moved:false, action:false, bonus:false, reaction:false };
+
+function renderChecklist(){
+  document.getElementById('checklist').innerHTML = checks.map(c => `
+    <div class="check-row" data-id="${c.id}">
+      <div class="checkbox ${state[c.id]?'checked':''}">${state[c.id]?'✓':''}</div>
+      <div class="check-label">${c.label}</div>
+    </div>`).join('');
+  document.querySelectorAll('.check-row').forEach(row => row.addEventListener('click', () => {
+    state[row.dataset.id] = !state[row.dataset.id]; render();
+  }));
+}
+
+function renderStatus(){
+  const items = [
+    { label: 'Move (up to your speed)', legal: !state.moved },
+    { label: 'Take an Action', legal: !state.action },
+    { label: 'Use a Bonus Action (if granted)', legal: !state.bonus },
+    { label: 'Use your Reaction', legal: !state.reaction }
+  ];
+  document.getElementById('statusList').innerHTML = items.map(i => `
+    <div class="status-item ${i.legal?'legal':'illegal'}">
+      <span class="dot ${i.legal?'legal':'illegal'}"></span>
+      <span class="label">${i.label}</span>
+    </div>`).join('');
+}
+
+function render(){ renderChecklist(); renderStatus(); }
+render();
+</script>
+</body>
+</html>

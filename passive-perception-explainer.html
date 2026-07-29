@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PASSIVE PERCEPTION // STEALTH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:600px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.2rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  .bracket-panel{position:relative; background:var(--panel); border:1px solid var(--gray-line); padding:18px 20px; margin-bottom:18px;}
+  .bracket-panel .bl, .bracket-panel .br{content:''; position:absolute; width:14px; height:14px;}
+  .bracket-panel .bl{ bottom:-1px; left:-1px; border-bottom:2px solid var(--gray); border-left:2px solid var(--gray); }
+  .bracket-panel .br{ bottom:-1px; right:-1px; border-bottom:2px solid var(--gray); border-right:2px solid var(--gray); }
+  .bracket-panel h2{font-family:'Archivo Black', sans-serif; font-size:0.95rem; margin:0 0 10px; text-transform:uppercase;}
+  .bracket-panel p{font-family:'Archivo', sans-serif; font-size:0.87rem; line-height:1.6; color:var(--gray); margin:0;}
+  .bracket-panel p + p{margin-top:10px;}
+  .bracket-panel b{color:var(--white);}
+
+  .row{display:flex; gap:10px; margin-bottom:14px;}
+  .field{flex:1;}
+  label{font-family:'JetBrains Mono', monospace; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--gray); display:block; margin-bottom:5px;}
+  input{
+    width:100%; background:var(--bg); border:1px solid var(--gray-line); color:var(--white);
+    padding:9px 10px; font-family:'JetBrains Mono', monospace; font-size:0.95rem;
+  }
+  input:focus{outline:none; border-color:var(--orange);}
+
+  .verdict{
+    margin-top:6px; padding:14px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.9rem;
+    border:1px solid var(--gray-line); display:none; font-weight:700;
+  }
+  .verdict.noticed{border-color:var(--red); color:var(--red);}
+  .verdict.unnoticed{border-color:var(--orange); color:var(--orange);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Passive Perception // Stealth</h1>
+    <p class="subtitle">Two systems that trip up nearly every new player.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="bracket-panel">
+    <div class="bl"></div><div class="br"></div>
+    <h2>Passive Perception</h2>
+    <p><b>What it is:</b> a baseline "always on" awareness score — 10 + your Wisdom (Perception) modifier. The DM uses it instead of asking you to roll.</p>
+    <p><b>When it's used:</b> noticing something you're not actively looking for. You never roll for this — it's compared silently against a DC.</p>
+  </div>
+
+  <div class="bracket-panel">
+    <div class="bl"></div><div class="br"></div>
+    <h2>Stealth</h2>
+    <p><b>What it is:</b> an active roll (Dex (Stealth) check) when you try to hide, sneak, or move unseen.</p>
+    <p><b>How it's checked:</b> your roll is compared against whoever might notice you's passive Perception. Beat it, and they don't spot you.</p>
+  </div>
+
+  <div class="bracket-panel">
+    <div class="bl"></div><div class="br"></div>
+    <h2>Try It: Do They Notice?</h2>
+    <div class="row">
+      <div class="field"><label>Your Stealth Roll</label><input type="number" id="stealthInput" placeholder="e.g. 14"></div>
+      <div class="field"><label>Their Passive Perception</label><input type="number" id="passiveInput" placeholder="e.g. 12"></div>
+    </div>
+    <div class="verdict" id="verdictBox"></div>
+  </div>
+</div>
+
+<script>
+function update(){
+  const stealth = parseInt(document.getElementById('stealthInput').value);
+  const passive = parseInt(document.getElementById('passiveInput').value);
+  const box = document.getElementById('verdictBox');
+  if(isNaN(stealth) || isNaN(passive)){ box.style.display='none'; return; }
+  box.style.display='block';
+  if(stealth >= passive){
+    box.className = 'verdict unnoticed';
+    box.textContent = `${stealth} ≥ ${passive} — YOU STAY HIDDEN`;
+  } else {
+    box.className = 'verdict noticed';
+    box.textContent = `${stealth} < ${passive} — THEY NOTICE YOU`;
+  }
+}
+document.getElementById('stealthInput').addEventListener('input', update);
+document.getElementById('passiveInput').addEventListener('input', update);
+</script>
+</body>
+</html>

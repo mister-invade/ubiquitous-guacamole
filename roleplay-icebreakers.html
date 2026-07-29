@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ROLEPLAY // ICEBREAKERS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:520px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.25rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  .cat-row{display:flex; gap:2px; margin-bottom:22px; flex-wrap:wrap;}
+  .cat-btn{
+    font-family:'JetBrains Mono', monospace; font-weight:700; font-size:0.72rem; text-transform:uppercase;
+    background:var(--panel); color:var(--gray); border:1px solid var(--gray-line); padding:8px 14px; cursor:pointer;
+  }
+  .cat-btn.active{border-color:var(--orange); color:var(--orange); background:var(--bg);}
+
+  .prompt-card{
+    position:relative; background:var(--panel); border:1px solid var(--gray-line); padding:34px 26px;
+    text-align:center; min-height:140px; display:flex; align-items:center; justify-content:center; margin-bottom:20px;
+  }
+  .prompt-text{font-family:'Archivo', sans-serif; font-size:1.1rem; line-height:1.55; font-weight:600;}
+
+  .btn-row{display:flex; justify-content:center;}
+  button.roll{
+    font-family:'Archivo Black', sans-serif; font-size:0.85rem; letter-spacing:0.02em; text-transform:uppercase;
+    background:var(--orange); color:var(--bg); border:1px solid var(--orange); padding:12px 26px; cursor:pointer;
+  }
+  button.roll:hover{background:var(--white); border-color:var(--white);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Roleplay // Icebreakers</h1>
+    <p class="subtitle">Stuck on what your character does? Pull a prompt.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="cat-row" id="catRow"></div>
+
+  <div class="prompt-card">
+    <div class="prompt-text" id="promptText">Pick a category and tap the button to begin.</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="roll" id="rollBtn">Give Me a Prompt</button>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = {
+  tavern: { label: 'Tavern / Social', prompts: [
+    "A stranger at the bar recognizes your character — but from where?",
+    "Someone offers to buy your next drink. Do you accept?",
+    "You overhear your name mentioned nearby. What do you do?",
+    "The bartender asks what brings you to town.",
+    "A bard plays a song about a legend your character reminds them of.",
+    "Someone challenges you to a friendly contest."
+  ]},
+  meeting: { label: 'First Meeting', prompts: [
+    "You meet another party member for the first time. First impression?",
+    "Someone mistakes you for a person of note. Do you correct them?",
+    "A new NPC offers to help — what makes you trust or distrust them?",
+    "You're asked your name and where you're from. Are you honest?",
+    "Another character compliments something about you."
+  ]},
+  tension: { label: 'Tension / Conflict', prompts: [
+    "A party member disagrees with your plan. Push back or go along?",
+    "You're accused of something you didn't do.",
+    "An NPC asks you to do something against your values.",
+    "Choose between helping a stranger and staying on schedule.",
+    "Someone in the party decides without asking you."
+  ]},
+  quiet: { label: 'Quiet Moments', prompts: [
+    "By the campfire, someone asks what you miss most from home.",
+    "What does your character do to relax after a hard fight?",
+    "Someone asks why you became an adventurer.",
+    "Your character notices something beautiful on the road.",
+    "It's late and no one else is awake. What are you thinking about?"
+  ]}
+};
+let currentCategory = 'tavern';
+
+function renderCategories(){
+  const row = document.getElementById('catRow');
+  row.innerHTML = Object.keys(CATEGORIES).map(key => `<button class="cat-btn ${key===currentCategory?'active':''}" data-key="${key}">${CATEGORIES[key].label}</button>`).join('');
+  document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => { currentCategory = btn.dataset.key; renderCategories(); }));
+}
+document.getElementById('rollBtn').addEventListener('click', () => {
+  const prompts = CATEGORIES[currentCategory].prompts;
+  document.getElementById('promptText').textContent = prompts[Math.floor(Math.random()*prompts.length)];
+});
+renderCategories();
+</script>
+</body>
+</html>

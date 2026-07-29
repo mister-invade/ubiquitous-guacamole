@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>INITIATIVE // TRACKER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A;
+    --panel:#141412;
+    --panel-alt:#1C1C19;
+    --white:#F2F1EC;
+    --gray:#8A8A82;
+    --gray-line:#38372F;
+    --orange:#FF8F5E;
+    --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white);
+    font-family:'Archivo', sans-serif;
+    min-height:100vh;
+    padding:24px 14px 60px;
+  }
+  .wrap{max-width:680px; margin:0 auto;}
+
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);
+  }
+  h1{
+    font-family:'Archivo Black', sans-serif;
+    font-size:1.3rem;
+    letter-spacing:0.02em;
+    margin:0;
+    text-transform:uppercase;
+  }
+  .round-stamp{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.8rem;
+    color:var(--bg);
+    background:var(--orange);
+    padding:5px 12px;
+    font-weight:700;
+  }
+
+  .hazard-bar{
+    height:6px;
+    background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px);
+    margin-bottom:20px;
+  }
+
+  .toolbar{display:flex; gap:2px; margin-bottom:18px; flex-wrap:wrap;}
+  button{
+    font-family:'Archivo', sans-serif;
+    font-weight:700;
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    background:var(--panel);
+    color:var(--white);
+    border:1px solid var(--gray-line);
+    padding:10px 16px;
+    cursor:pointer;
+  }
+  button:hover{border-color:var(--orange); color:var(--orange);}
+  button.primary{background:var(--orange); color:var(--bg); border-color:var(--orange);}
+  button.primary:hover{background:var(--white); color:var(--bg);}
+  button.danger:hover{border-color:var(--red); color:var(--red);}
+  button.small{padding:5px 10px; font-size:0.7rem;}
+  button:disabled{opacity:0.3; cursor:default;}
+
+  .bracket-panel{
+    position:relative;
+    border:1px solid var(--gray-line);
+    background:var(--panel);
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .bracket-panel::before, .bracket-panel::after,
+  .bracket-panel .bl, .bracket-panel .br{
+    content:''; position:absolute; width:14px; height:14px; border-color:var(--gray);
+  }
+  .bracket-panel::before{ top:-1px; left:-1px; border-top:2px solid var(--gray); border-left:2px solid var(--gray); }
+  .bracket-panel::after{ top:-1px; right:-1px; border-top:2px solid var(--gray); border-right:2px solid var(--gray); }
+  .bracket-panel .bl{ bottom:-1px; left:-1px; border-bottom:2px solid var(--gray); border-left:2px solid var(--gray); }
+  .bracket-panel .br{ bottom:-1px; right:-1px; border-bottom:2px solid var(--gray); border-right:2px solid var(--gray); }
+
+  .field-grid{display:grid; grid-template-columns:1.4fr 0.7fr 0.7fr 0.7fr auto; gap:10px;}
+  label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.65rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--gray);
+    display:block;
+    margin-bottom:5px;
+  }
+  input, select{
+    width:100%;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.88rem;
+    background:var(--bg);
+    border:1px solid var(--gray-line);
+    color:var(--white);
+    padding:8px 9px;
+  }
+  input:focus, select:focus{outline:none; border-color:var(--orange);}
+  .type-cell{grid-column:1/-1; margin-top:4px;}
+
+  .list{display:flex; flex-direction:column; gap:12px;}
+
+  .row{
+    position:relative;
+    border:1px solid var(--gray-line);
+    background:var(--panel);
+    padding:16px 18px;
+    display:grid;
+    grid-template-columns:44px 1fr auto;
+    gap:14px;
+    align-items:center;
+    clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  }
+  .row.active{
+    border-color:var(--orange);
+    background:var(--panel-alt);
+  }
+  .row.active::before, .row.active::after{
+    content:''; position:absolute; width:16px; height:16px;
+  }
+  .row.active::before{ top:-2px; left:-2px; border-top:3px solid var(--orange); border-left:3px solid var(--orange); }
+  .row.active::after{ bottom:-2px; right:-2px; border-bottom:3px solid var(--orange); border-right:3px solid var(--orange); }
+  .row.down{opacity:0.4;}
+
+  .idx{
+    font-family:'JetBrains Mono', monospace; font-weight:700; font-size:1.1rem;
+    color:var(--gray); text-align:center;
+  }
+  .row.active .idx{color:var(--orange);}
+
+  .name-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+  .name{font-family:'Archivo Black', sans-serif; font-size:1rem; text-transform:uppercase; letter-spacing:0.01em;}
+  .row.active .name{color:var(--orange);}
+  .type-tag{
+    font-family:'JetBrains Mono', monospace; font-size:0.62rem; text-transform:uppercase;
+    color:var(--gray); border:1px solid var(--gray-line); padding:1px 7px;
+  }
+  .type-tag.enemy{color:var(--red); border-color:var(--red);}
+
+  .hp-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .hp-track{flex:1; height:6px; max-width:170px; background:var(--gray-line); position:relative;}
+  .hp-fill{height:100%;}
+  .hp-text, .ac-text{font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:var(--gray); white-space:nowrap;}
+
+  .tags{display:flex; gap:6px; flex-wrap:wrap;}
+  .cond{
+    font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--red);
+    border:1px solid var(--red); padding:0 7px; cursor:pointer;
+  }
+  .add-cond{
+    font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--gray);
+    border:1px dashed var(--gray-line); padding:0 7px; cursor:pointer;
+  }
+
+  .actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .init-val{font-family:'JetBrains Mono', monospace; font-size:0.68rem; color:var(--gray);}
+  .hp-adjust{display:flex; gap:4px; align-items:center;}
+  .hp-adjust input{width:46px; text-align:center; padding:5px 4px;}
+
+  .empty{
+    text-align:center; padding:44px 20px; color:var(--gray);
+    font-family:'JetBrains Mono', monospace; font-size:0.85rem; border:1px dashed var(--gray-line);
+  }
+
+  .log-panel h2{
+    font-family:'Archivo Black', sans-serif; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--gray); margin:0 0 12px;
+  }
+  .log-entries{
+    font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:var(--gray);
+    max-height:120px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:4px;
+  }
+  .log-entries div::before{content:'> '; color:var(--orange);}
+
+  .footer-note{
+    text-align:center; margin-top:20px; font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:var(--gray-line);
+    text-transform:uppercase; letter-spacing:0.05em;
+  }
+
+  @media (max-width:520px){
+    .field-grid{grid-template-columns:1fr 1fr;}
+    .field-grid .submit-cell{grid-column:1/-1;}
+    .row{grid-template-columns:32px 1fr; grid-template-areas:"idx info" "actions actions";}
+    .actions{align-items:flex-start; flex-direction:row; flex-wrap:wrap; margin-top:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Initiative // Tracker</h1>
+    <div class="round-stamp">RND.<span id="roundStamp">01</span></div>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="toolbar">
+    <button class="primary" id="nextTurnBtn">Next Turn</button>
+    <button id="prevTurnBtn">Prev Turn</button>
+    <button id="sortBtn">Sort</button>
+    <button class="danger" id="clearBtn">Clear</button>
+  </div>
+
+  <div class="bracket-panel">
+    <div class="bl"></div><div class="br"></div>
+    <div class="field-grid">
+      <div><label>Name</label><input type="text" id="fName" placeholder="Goblin Archer"></div>
+      <div><label>Init</label><input type="number" id="fInit" placeholder="14"></div>
+      <div><label>HP</label><input type="number" id="fHp" placeholder="12"></div>
+      <div><label>AC</label><input type="number" id="fAc" placeholder="13"></div>
+      <div class="submit-cell"><button class="primary" id="addBtn">Add</button></div>
+      <div class="type-cell">
+        <label>Type</label>
+        <select id="fType">
+          <option value="pc">Player Character</option>
+          <option value="ally">Ally / NPC</option>
+          <option value="enemy" selected>Enemy</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+  <div class="empty" id="emptyMsg" style="display:none;">NO TARGETS LOCKED — ADD A COMBATANT ABOVE</div>
+
+  <div class="bracket-panel log-panel" style="margin-top:16px;">
+    <div class="bl"></div><div class="br"></div>
+    <h2>Battle Log</h2>
+    <div class="log-entries" id="logEntries"></div>
+  </div>
+
+  <div class="footer-note">No data persists between sessions // encounter resets on reload</div>
+</div>
+
+<script>
+let state = { combatants: [], round: 1, activeIndex: 0, log: [] };
+let nextId = 1;
+
+function hpColor(pct){
+  if(pct <= 0) return '#4A4A44';
+  if(pct <= 25) return 'var(--red)';
+  if(pct <= 50) return 'var(--orange)';
+  return '#E8E6DC';
+}
+
+function addLog(msg){
+  const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  state.log.push(`${time} ${msg}`);
+  if(state.log.length > 60) state.log.shift();
+  renderLog();
+}
+function renderLog(){
+  document.getElementById('logEntries').innerHTML = state.log.map(l => `<div>${escapeHtml(l)}</div>`).join('');
+}
+function escapeHtml(str){ const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function render(){
+  const list = document.getElementById('list');
+  const emptyMsg = document.getElementById('emptyMsg');
+  document.getElementById('roundStamp').textContent = pad(state.round);
+
+  if(state.combatants.length === 0){
+    list.innerHTML = '';
+    emptyMsg.style.display = 'block';
+    document.getElementById('nextTurnBtn').disabled = true;
+    document.getElementById('prevTurnBtn').disabled = true;
+    return;
+  }
+  emptyMsg.style.display = 'none';
+  document.getElementById('nextTurnBtn').disabled = false;
+  document.getElementById('prevTurnBtn').disabled = false;
+
+  list.innerHTML = state.combatants.map((c, i) => {
+    const pct = Math.max(0, Math.min(100, Math.round((c.hp / c.maxHp) * 100)));
+    const isActive = i === state.activeIndex;
+    const isDown = c.hp <= 0;
+    const typeLabel = c.type === 'pc' ? 'PC' : c.type === 'ally' ? 'ALLY' : 'ENEMY';
+    return `
+      <div class="row ${isActive ? 'active' : ''} ${isDown ? 'down' : ''}">
+        <div class="idx">${pad(i + 1)}</div>
+        <div>
+          <div class="name-row">
+            <span class="name">${escapeHtml(c.name)}</span>
+            <span class="type-tag ${c.type}">${typeLabel}</span>
+            ${isDown ? '<span class="type-tag enemy">DOWN</span>' : ''}
+          </div>
+          <div class="hp-row">
+            <div class="hp-track"><div class="hp-fill" style="width:${pct}%; background:${hpColor(pct)};"></div></div>
+            <span class="hp-text">[HP ${c.hp}/${c.maxHp}]</span>
+            ${c.ac ? `<span class="ac-text">[AC ${c.ac}]</span>` : ''}
+          </div>
+          <div class="tags">
+            ${c.conditions.map(cond => `<span class="cond" data-idx="${i}" data-cond="${escapeHtml(cond)}">${escapeHtml(cond)}</span>`).join('')}
+            <span class="add-cond" data-idx="${i}">+ COND</span>
+          </div>
+        </div>
+        <div class="actions">
+          <div class="init-val">INIT ${c.init}</div>
+          <div class="hp-adjust">
+            <input type="number" placeholder="0" id="dmg-${i}">
+            <button class="danger small" data-action="damage" data-idx="${i}">DMG</button>
+            <button class="small" data-action="heal" data-idx="${i}">HEAL</button>
+          </div>
+          <button class="small" data-action="remove" data-idx="${i}">DEL</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  attachListeners();
+}
+
+function attachListeners(){
+  document.querySelectorAll('[data-action="damage"]').forEach(btn => btn.addEventListener('click', () => {
+    const idx = +btn.dataset.idx;
+    const input = document.getElementById(`dmg-${idx}`);
+    const val = parseInt(input.value) || 0;
+    if(val <= 0) return;
+    const c = state.combatants[idx];
+    c.hp = Math.max(0, c.hp - val);
+    addLog(`${c.name} takes ${val} dmg [${c.hp}/${c.maxHp}]`);
+    input.value = ''; render();
+  }));
+  document.querySelectorAll('[data-action="heal"]').forEach(btn => btn.addEventListener('click', () => {
+    const idx = +btn.dataset.idx;
+    const input = document.getElementById(`dmg-${idx}`);
+    const val = parseInt(input.value) || 0;
+    if(val <= 0) return;
+    const c = state.combatants[idx];
+    c.hp = Math.min(c.maxHp, c.hp + val);
+    addLog(`${c.name} heals ${val} [${c.hp}/${c.maxHp}]`);
+    input.value = ''; render();
+  }));
+  document.querySelectorAll('[data-action="remove"]').forEach(btn => btn.addEventListener('click', () => {
+    const idx = +btn.dataset.idx;
+    const c = state.combatants[idx];
+    if(!confirm(`Remove ${c.name}?`)) return;
+    state.combatants.splice(idx, 1);
+    if(state.activeIndex >= state.combatants.length) state.activeIndex = 0;
+    addLog(`${c.name} removed`); render();
+  }));
+  document.querySelectorAll('.add-cond').forEach(el => el.addEventListener('click', () => {
+    const idx = +el.dataset.idx;
+    const cond = prompt('Condition (e.g. Poisoned, Prone):');
+    if(!cond || !cond.trim()) return;
+    state.combatants[idx].conditions.push(cond.trim()); render();
+  }));
+  document.querySelectorAll('.cond').forEach(el => el.addEventListener('click', () => {
+    const idx = +el.dataset.idx;
+    const cond = el.dataset.cond;
+    const c = state.combatants[idx];
+    c.conditions = c.conditions.filter(x => x !== cond); render();
+  }));
+}
+
+document.getElementById('addBtn').addEventListener('click', () => {
+  const name = document.getElementById('fName').value.trim();
+  const init = parseInt(document.getElementById('fInit').value) || 0;
+  const hp = parseInt(document.getElementById('fHp').value) || 1;
+  const ac = parseInt(document.getElementById('fAc').value) || null;
+  const type = document.getElementById('fType').value;
+  if(!name) return;
+  state.combatants.push({ id: nextId++, name, init, hp, maxHp: hp, ac, type, conditions: [] });
+  sortByInit();
+  addLog(`${name} joins [INIT ${init}] [HP ${hp}]`);
+  document.getElementById('fName').value = '';
+  document.getElementById('fInit').value = '';
+  document.getElementById('fHp').value = '';
+  document.getElementById('fAc').value = '';
+  document.getElementById('fType').value = 'enemy';
+  document.getElementById('fName').focus();
+  render();
+});
+
+function sortByInit(){
+  const activeCombatant = state.combatants[state.activeIndex];
+  state.combatants.sort((a, b) => b.init - a.init);
+  if(activeCombatant){
+    state.activeIndex = state.combatants.findIndex(c => c.id === activeCombatant.id);
+    if(state.activeIndex < 0) state.activeIndex = 0;
+  }
+}
+
+document.getElementById('sortBtn').addEventListener('click', () => {
+  sortByInit(); addLog('turn order re-sorted'); render();
+});
+document.getElementById('nextTurnBtn').addEventListener('click', () => {
+  if(state.combatants.length === 0) return;
+  state.activeIndex++;
+  if(state.activeIndex >= state.combatants.length){
+    state.activeIndex = 0; state.round++;
+    addLog(`round ${state.round} begins`);
+  }
+  addLog(`${state.combatants[state.activeIndex].name}'s turn`);
+  render();
+});
+document.getElementById('prevTurnBtn').addEventListener('click', () => {
+  if(state.combatants.length === 0) return;
+  state.activeIndex--;
+  if(state.activeIndex < 0){
+    state.activeIndex = state.combatants.length - 1;
+    if(state.round > 1) state.round--;
+  }
+  render();
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if(!confirm('Clear the entire encounter?')) return;
+  state = { combatants: [], round: 1, activeIndex: 0, log: [] };
+  render(); renderLog();
+});
+
+render();
+renderLog();
+</script>
+</body>
+</html>

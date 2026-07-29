@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SKILL CHECK // CHEAT SHEET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:600px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.25rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  input#search{
+    width:100%; background:var(--panel); border:1px solid var(--gray-line); color:var(--white);
+    padding:12px 14px; font-family:'JetBrains Mono', monospace; font-size:0.9rem; margin-bottom:18px;
+  }
+  input#search:focus{outline:none; border-color:var(--orange);}
+
+  .skill-list{display:flex; flex-direction:column; gap:2px;}
+  .skill-row{
+    display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
+    background:var(--panel); border:1px solid var(--gray-line); padding:12px 16px;
+  }
+  .skill-name{font-family:'Archivo Black', sans-serif; font-size:0.92rem; text-transform:uppercase;}
+  .skill-example{font-family:'JetBrains Mono', monospace; font-size:0.72rem; color:var(--gray); margin-top:3px;}
+  .ability-tag{
+    font-family:'JetBrains Mono', monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em;
+    padding:3px 10px; border:1px solid var(--orange); color:var(--orange); white-space:nowrap; font-weight:700;
+  }
+  .no-results{text-align:center; color:var(--gray); font-family:'JetBrains Mono', monospace; font-size:0.85rem; padding:30px 0; border:1px dashed var(--gray-line);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Skill Check // Cheat Sheet</h1>
+    <p class="subtitle">Search to find which ability governs a skill.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <input type="text" id="search" placeholder="SEARCH A SKILL (E.G. 'SNEAK', 'LIE', 'CLIMB')...">
+
+  <div class="skill-list" id="skillList"></div>
+  <div class="no-results" id="noResults" style="display:none;">NO MATCHING SKILL FOUND</div>
+</div>
+
+<script>
+const SKILLS = [
+  { name: 'Acrobatics', ability: 'DEX', example: 'Balancing, tumbling, escaping a grapple' },
+  { name: 'Animal Handling', ability: 'WIS', example: 'Calming or controlling an animal' },
+  { name: 'Arcana', ability: 'INT', example: 'Recalling lore about spells, magic items, planes' },
+  { name: 'Athletics', ability: 'STR', example: 'Climbing, jumping, swimming, grappling' },
+  { name: 'Deception', ability: 'CHA', example: 'Lying convincingly, bluffing' },
+  { name: 'History', ability: 'INT', example: 'Recalling historical events, kingdoms, wars' },
+  { name: 'Insight', ability: 'WIS', example: 'Reading true intentions, spotting a lie' },
+  { name: 'Intimidation', ability: 'CHA', example: 'Threatening or coercing someone' },
+  { name: 'Investigation', ability: 'INT', example: 'Finding clues, deducing how something works' },
+  { name: 'Medicine', ability: 'WIS', example: 'Stabilizing a dying creature, diagnosing illness' },
+  { name: 'Nature', ability: 'INT', example: 'Recalling lore about terrain, plants, animals' },
+  { name: 'Perception', ability: 'WIS', example: 'Spotting, hearing, or noticing something' },
+  { name: 'Performance', ability: 'CHA', example: 'Singing, acting, playing music for an audience' },
+  { name: 'Persuasion', ability: 'CHA', example: 'Honestly convincing someone of something' },
+  { name: 'Religion', ability: 'INT', example: 'Recalling lore about gods, rites, holy symbols' },
+  { name: 'Sleight of Hand', ability: 'DEX', example: 'Pickpocketing, palming an object' },
+  { name: 'Stealth', ability: 'DEX', example: 'Hiding, moving silently, sneaking' },
+  { name: 'Survival', ability: 'WIS', example: 'Tracking, foraging, navigating the wilderness' }
+];
+
+function render(filter = ''){
+  const list = document.getElementById('skillList');
+  const noResults = document.getElementById('noResults');
+  const f = filter.trim().toLowerCase();
+  const filtered = SKILLS.filter(s => s.name.toLowerCase().includes(f) || s.example.toLowerCase().includes(f) || s.ability.toLowerCase().includes(f));
+  if(filtered.length === 0){ list.innerHTML=''; noResults.style.display='block'; return; }
+  noResults.style.display='none';
+  list.innerHTML = filtered.map(s => `
+    <div class="skill-row">
+      <div>
+        <div class="skill-name">${s.name}</div>
+        <div class="skill-example">${s.example}</div>
+      </div>
+      <span class="ability-tag">${s.ability}</span>
+    </div>`).join('');
+}
+document.getElementById('search').addEventListener('input', (e) => render(e.target.value));
+render();
+</script>
+</body>
+</html>

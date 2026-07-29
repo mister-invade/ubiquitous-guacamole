@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DAMAGE ROLL // HELPER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:600px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.25rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  .presets{display:flex; gap:2px; flex-wrap:wrap; margin-bottom:18px;}
+  .preset-btn{
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; background:var(--panel); color:var(--gray);
+    border:1px solid var(--gray-line); padding:6px 12px; cursor:pointer;
+  }
+  .preset-btn:hover{border-color:var(--orange); color:var(--orange);}
+
+  .bracket-panel{position:relative; background:var(--panel); border:1px solid var(--gray-line); padding:20px; margin-bottom:18px;}
+  .bracket-panel .bl, .bracket-panel .br{content:''; position:absolute; width:14px; height:14px;}
+  .bracket-panel .bl{ bottom:-1px; left:-1px; border-bottom:2px solid var(--gray); border-left:2px solid var(--gray); }
+  .bracket-panel .br{ bottom:-1px; right:-1px; border-bottom:2px solid var(--gray); border-right:2px solid var(--gray); }
+
+  .row{display:flex; gap:10px; margin-bottom:12px;}
+  .field{flex:1;}
+  label{font-family:'JetBrains Mono', monospace; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--gray); display:block; margin-bottom:5px;}
+  input, select{
+    width:100%; background:var(--bg); border:1px solid var(--gray-line); color:var(--white);
+    padding:9px 10px; font-family:'JetBrains Mono', monospace; font-size:0.9rem;
+  }
+  input:focus, select:focus{outline:none; border-color:var(--orange);}
+
+  button.roll{
+    width:100%; font-family:'Archivo Black', sans-serif; font-size:0.9rem; letter-spacing:0.02em; text-transform:uppercase;
+    background:var(--orange); color:var(--bg); border:1px solid var(--orange); padding:12px; cursor:pointer; margin-top:6px;
+  }
+  button.roll:hover{background:var(--white); border-color:var(--white);}
+
+  .result{margin-top:16px; padding:16px; background:var(--bg); border:1px solid var(--gray-line); display:none;}
+  .result .big{font-family:'JetBrains Mono', monospace; font-size:2.2rem; color:var(--orange); font-weight:700; text-align:center;}
+  .result .breakdown{font-family:'JetBrains Mono', monospace; font-size:0.82rem; color:var(--gray); text-align:center; margin-top:8px;}
+
+  .crit-toggle{display:flex; align-items:center; gap:8px; margin-top:4px; font-family:'JetBrains Mono', monospace; font-size:0.8rem; color:var(--gray);}
+  .crit-toggle input{width:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Damage Roll // Helper</h1>
+    <p class="subtitle">Pick dice + modifier, roll. Crits double the dice, not the modifier.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="presets" id="presets"></div>
+
+  <div class="bracket-panel">
+    <div class="bl"></div><div class="br"></div>
+    <div class="row">
+      <div class="field"><label>Dice Count</label><input type="number" id="countInput" value="1" min="1" max="20"></div>
+      <div class="field"><label>Die Type</label>
+        <select id="sidesSelect">
+          <option value="4">d4</option><option value="6" selected>d6</option><option value="8">d8</option>
+          <option value="10">d10</option><option value="12">d12</option><option value="20">d20</option>
+        </select>
+      </div>
+      <div class="field"><label>Modifier</label><input type="number" id="modInput" value="0"></div>
+    </div>
+    <label class="crit-toggle"><input type="checkbox" id="critCheck"> THIS IS A CRITICAL HIT (DOUBLE DICE)</label>
+    <button class="roll" id="rollBtn">Roll Damage</button>
+    <div class="result" id="resultBox">
+      <div class="big" id="resultBig"></div>
+      <div class="breakdown" id="resultBreakdown"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRESETS = [
+  { label: 'Dagger (1d4)', count:1, sides:4 },
+  { label: 'Shortsword (1d6)', count:1, sides:6 },
+  { label: 'Longsword (1d8)', count:1, sides:8 },
+  { label: 'Greatsword (2d6)', count:2, sides:6 },
+  { label: 'Greataxe (1d12)', count:1, sides:12 },
+  { label: 'Fireball (8d6)', count:8, sides:6 },
+  { label: 'Magic Missile (1d4+1)', count:1, sides:4, mod:1 }
+];
+
+function renderPresets(){
+  document.getElementById('presets').innerHTML = PRESETS.map((p,i) => `<button class="preset-btn" data-idx="${i}">${p.label}</button>`).join('');
+  document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', () => {
+    const p = PRESETS[btn.dataset.idx];
+    document.getElementById('countInput').value = p.count;
+    document.getElementById('sidesSelect').value = p.sides;
+    document.getElementById('modInput').value = p.mod || 0;
+  }));
+}
+renderPresets();
+
+document.getElementById('rollBtn').addEventListener('click', () => {
+  let count = parseInt(document.getElementById('countInput').value) || 1;
+  const sides = parseInt(document.getElementById('sidesSelect').value);
+  const mod = parseInt(document.getElementById('modInput').value) || 0;
+  const isCrit = document.getElementById('critCheck').checked;
+  const rollCount = isCrit ? count*2 : count;
+  const rolls = [];
+  for(let i=0;i<rollCount;i++) rolls.push(Math.floor(Math.random()*sides)+1);
+  const total = rolls.reduce((a,b)=>a+b,0) + mod;
+  const resultBox = document.getElementById('resultBox');
+  resultBox.style.display = 'block';
+  document.getElementById('resultBig').textContent = total;
+  const modText = mod !== 0 ? ` ${mod>0?'+':'−'} ${Math.abs(mod)}` : '';
+  const critText = isCrit ? ` (CRIT: ${rollCount}D${sides})` : ` (${count}D${sides})`;
+  document.getElementById('resultBreakdown').textContent = `[${rolls.join(', ')}]${modText}${critText}`;
+});
+</script>
+</body>
+</html>

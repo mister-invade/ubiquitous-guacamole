@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ADVANTAGE // ROLLER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:520px; margin:0 auto;}
+  header{padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.25rem; letter-spacing:0.02em; margin:0 0 6px; text-transform:uppercase;}
+  .subtitle{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); margin:0; line-height:1.5;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  .mode-row{display:flex; gap:2px; margin:20px 0;}
+  .mode-btn{
+    flex:1; font-family:'Archivo', sans-serif; font-weight:700; font-size:0.85rem; text-transform:uppercase;
+    background:var(--panel); color:var(--gray); border:1px solid var(--gray-line); padding:12px 8px; cursor:pointer; text-align:center;
+  }
+  .mode-btn.active{border-color:var(--orange); color:var(--orange); background:var(--bg);}
+  .mode-btn.active.dis{border-color:var(--red); color:var(--red);}
+
+  .roll-row{display:flex; gap:10px; margin-bottom:20px;}
+  .roll-row input{
+    flex:1; background:var(--panel); border:1px solid var(--gray-line); color:var(--white);
+    padding:10px 12px; font-family:'JetBrains Mono', monospace; text-align:center;
+  }
+  .roll-row input:focus{outline:none; border-color:var(--orange);}
+  button.roll{
+    font-family:'Archivo', sans-serif; font-weight:700; font-size:0.9rem; text-transform:uppercase;
+    background:var(--orange); color:var(--bg); border:1px solid var(--orange); padding:10px 22px; cursor:pointer;
+  }
+  button.roll:hover{background:var(--white); border-color:var(--white);}
+
+  .dice-display{display:flex; gap:14px; justify-content:center; margin-bottom:18px;}
+  .die{
+    width:76px; height:76px; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:1.9rem; font-weight:700;
+    background:var(--panel); border:1px solid var(--gray-line); color:var(--gray);
+  }
+  .die.chosen{border-color:var(--orange); color:var(--orange);}
+  .die.chosen.dis{border-color:var(--red); color:var(--red);}
+
+  .result-line{text-align:center; margin-bottom:24px;}
+  .result-line .total{font-family:'JetBrains Mono', monospace; font-size:2.2rem; color:var(--white); font-weight:700;}
+  .result-line .note{font-family:'JetBrains Mono', monospace; font-size:0.8rem; color:var(--gray); margin-top:4px;}
+
+  .explain{
+    background:var(--panel); border:1px solid var(--gray-line); padding:16px 18px; font-size:0.85rem; line-height:1.6; color:var(--gray);
+  }
+  .explain b{color:var(--white);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Advantage // Roller</h1>
+    <p class="subtitle">Advantage or disadvantage means rolling two d20s instead of one.</p>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="mode-row">
+    <button class="mode-btn" data-mode="normal">Normal</button>
+    <button class="mode-btn" data-mode="advantage">Advantage</button>
+    <button class="mode-btn dis" data-mode="disadvantage">Disadvantage</button>
+  </div>
+
+  <div class="roll-row">
+    <input type="number" id="modInput" placeholder="Modifier" value="0">
+    <button class="roll" id="rollBtn">Roll</button>
+  </div>
+
+  <div class="dice-display" id="diceDisplay"></div>
+  <div class="result-line" id="resultLine"></div>
+
+  <div class="explain" id="explainBox">
+    <b>Advantage:</b> roll two d20s, take the <b>higher</b>.<br><br>
+    <b>Disadvantage:</b> roll two d20s, take the <b>lower</b>.<br><br>
+    You never roll more than two dice. If you have both at once, they cancel out to a normal roll.
+  </div>
+</div>
+
+<script>
+let mode = 'normal';
+document.querySelectorAll('.mode-btn').forEach(btn => btn.addEventListener('click', () => {
+  mode = btn.dataset.mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}));
+document.querySelector('.mode-btn[data-mode="normal"]').classList.add('active');
+
+document.getElementById('rollBtn').addEventListener('click', () => {
+  const mod = parseInt(document.getElementById('modInput').value) || 0;
+  const modSign = mod >= 0 ? '+' : '';
+  const diceDisplay = document.getElementById('diceDisplay');
+  const resultLine = document.getElementById('resultLine');
+
+  if(mode === 'normal'){
+    const roll = Math.floor(Math.random()*20)+1;
+    diceDisplay.innerHTML = `<div class="die chosen">${roll}</div>`;
+    resultLine.innerHTML = `<div class="total">${roll+mod}</div><div class="note">D20 (${roll}) ${modSign}${mod}</div>`;
+    return;
+  }
+  const roll1 = Math.floor(Math.random()*20)+1;
+  const roll2 = Math.floor(Math.random()*20)+1;
+  const chosen = mode === 'advantage' ? Math.max(roll1,roll2) : Math.min(roll1,roll2);
+  const modeClass = mode === 'disadvantage' ? 'dis' : '';
+  diceDisplay.innerHTML = `
+    <div class="die ${roll1===chosen ? 'chosen '+modeClass : ''}">${roll1}</div>
+    <div class="die ${roll2===chosen ? 'chosen '+modeClass : ''}">${roll2}</div>`;
+  const label = mode === 'advantage' ? 'HIGHER' : 'LOWER';
+  resultLine.innerHTML = `<div class="total">${chosen+mod}</div><div class="note">TOOK THE ${label} ROLL (${chosen}) ${modSign}${mod}</div>`;
+});
+</script>
+</body>
+</html>
