@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ACTION ECONOMY // TRACKER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --panel:#141412; --panel-alt:#1C1C19;
+    --white:#F2F1EC; --gray:#8A8A82; --gray-line:#38372F;
+    --orange:#FF8F5E; --red:#FF5C5C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    color:var(--white); font-family:'Archivo', sans-serif; min-height:100vh; padding:24px 14px 60px;
+  }
+  .wrap{max-width:820px; margin:0 auto;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:14px 0; margin-bottom:6px; border-bottom:3px solid var(--white);}
+  h1{font-family:'Archivo Black', sans-serif; font-size:1.3rem; letter-spacing:0.02em; margin:0; text-transform:uppercase;}
+  .hazard-bar{height:6px; background:repeating-linear-gradient(-45deg, var(--orange) 0 10px, var(--bg) 10px 20px); margin-bottom:20px;}
+
+  .toolbar{display:flex; gap:2px; margin-bottom:20px; flex-wrap:wrap;}
+  button{
+    font-family:'Archivo', sans-serif; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em;
+    background:var(--panel); color:var(--white); border:1px solid var(--gray-line); padding:10px 16px; cursor:pointer;
+  }
+  button:hover{border-color:var(--orange); color:var(--orange);}
+  button.primary{background:var(--orange); color:var(--bg); border-color:var(--orange);}
+  button.primary:hover{background:var(--white); color:var(--bg);}
+  button.small{padding:5px 10px; font-size:0.68rem;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; margin-bottom:24px;}
+  .card{
+    position:relative; border:1px solid var(--gray-line); background:var(--panel); padding:16px;
+    clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  }
+  .card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .card-name{
+    font-family:'Archivo Black', sans-serif; font-size:1rem; text-transform:uppercase; background:transparent;
+    border:none; border-bottom:1px solid transparent; color:var(--white); width:70%;
+  }
+  .card-name:focus{outline:none; border-bottom:1px solid var(--orange);}
+  .remove-x{background:none; border:none; color:var(--gray); font-size:1.1rem; cursor:pointer;}
+  .remove-x:hover{color:var(--red);}
+
+  .econ-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .econ-label{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); text-transform:uppercase; letter-spacing:0.03em;}
+  .toggle{
+    width:78px; padding:6px 0; border:1px solid var(--gray-line); background:var(--bg); color:var(--gray);
+    font-size:0.7rem; font-family:'JetBrains Mono', monospace; text-transform:uppercase; letter-spacing:0.04em; cursor:pointer; text-align:center;
+  }
+  .toggle.used{background:var(--red); border-color:var(--red); color:var(--bg); font-weight:700;}
+
+  .move-row{display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-line);}
+  .move-row label{font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--gray); flex:1; text-transform:uppercase;}
+  .move-inputs{display:flex; align-items:center; gap:4px; font-family:'JetBrains Mono', monospace; font-size:0.82rem; color:var(--gray);}
+  .move-inputs input{width:42px; background:var(--bg); border:1px solid var(--gray-line); color:var(--white); padding:5px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.82rem;}
+  .move-bar-track{height:5px; background:var(--gray-line); margin-top:8px;}
+  .move-bar-fill{height:100%; background:var(--orange); transition:width .2s ease;}
+
+  .empty{text-align:center; padding:44px 20px; color:var(--gray); font-family:'JetBrains Mono', monospace; font-size:0.85rem; border:1px dashed var(--gray-line); margin-bottom:20px;}
+
+  .footer-note{text-align:center; margin-top:20px; font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:var(--gray-line); text-transform:uppercase; letter-spacing:0.05em;}
+
+  @media (max-width:480px){.card-name{width:60%;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Action Economy // Tracker</h1>
+  </header>
+  <div class="hazard-bar"></div>
+
+  <div class="toolbar">
+    <button class="primary" id="addPlayerBtn">+ Add Player</button>
+    <button id="newTurnBtn">Reset All / New Turn</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyMsg" style="display:none;">NO PLAYERS TRACKED — ADD ONE ABOVE</div>
+
+  <div class="footer-note">No data persists between sessions // resets on reload</div>
+</div>
+
+<script>
+let players = [];
+let nextId = 1;
+
+function addPlayer(name = 'New Player', speed = 30){
+  players.push({ id: nextId++, name, action:false, bonus:false, reaction:false, speed, speedUsed:0 });
+  render();
+}
+
+function render(){
+  const grid = document.getElementById('grid');
+  const emptyMsg = document.getElementById('emptyMsg');
+  if(players.length === 0){ grid.innerHTML=''; emptyMsg.style.display='block'; return; }
+  emptyMsg.style.display='none';
+
+  grid.innerHTML = players.map(p => {
+    const pct = p.speed > 0 ? Math.min(100, Math.round((p.speedUsed / p.speed) * 100)) : 0;
+    return `
+    <div class="card" data-id="${p.id}">
+      <div class="card-head">
+        <input class="card-name" value="${escapeHtml(p.name)}" data-field="name" data-id="${p.id}">
+        <button class="remove-x" data-action="remove" data-id="${p.id}">✕</button>
+      </div>
+      <div class="econ-row"><span class="econ-label">Action</span><button class="toggle ${p.action?'used':''}" data-action="action" data-id="${p.id}">${p.action?'Used':'Ready'}</button></div>
+      <div class="econ-row"><span class="econ-label">Bonus Action</span><button class="toggle ${p.bonus?'used':''}" data-action="bonus" data-id="${p.id}">${p.bonus?'Used':'Ready'}</button></div>
+      <div class="econ-row"><span class="econ-label">Reaction</span><button class="toggle ${p.reaction?'used':''}" data-action="reaction" data-id="${p.id}">${p.reaction?'Used':'Ready'}</button></div>
+      <div class="move-row">
+        <label>Movement</label>
+        <div class="move-inputs"><input type="number" data-field="speedUsed" data-id="${p.id}" value="${p.speedUsed}"> / <input type="number" data-field="speed" data-id="${p.id}" value="${p.speed}"> FT</div>
+      </div>
+      <div class="move-bar-track"><div class="move-bar-fill" style="width:${pct}%;"></div></div>
+    </div>`;
+  }).join('');
+  attachListeners();
+}
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+
+function attachListeners(){
+  document.querySelectorAll('.toggle').forEach(btn => btn.addEventListener('click', () => {
+    const id = +btn.dataset.id, field = btn.dataset.action;
+    players.find(x=>x.id===id)[field] = !players.find(x=>x.id===id)[field];
+    render();
+  }));
+  document.querySelectorAll('[data-action="remove"]').forEach(btn => btn.addEventListener('click', () => {
+    players = players.filter(x=>x.id !== +btn.dataset.id); render();
+  }));
+  document.querySelectorAll('[data-field="name"]').forEach(input => input.addEventListener('input', () => {
+    players.find(x=>x.id===+input.dataset.id).name = input.value;
+  }));
+  document.querySelectorAll('[data-field="speed"]').forEach(input => input.addEventListener('input', () => {
+    players.find(x=>x.id===+input.dataset.id).speed = parseInt(input.value)||0; render();
+  }));
+  document.querySelectorAll('[data-field="speedUsed"]').forEach(input => input.addEventListener('input', () => {
+    players.find(x=>x.id===+input.dataset.id).speedUsed = parseInt(input.value)||0; render();
+  }));
+}
+
+document.getElementById('addPlayerBtn').addEventListener('click', () => addPlayer(`Player ${players.length+1}`, 30));
+document.getElementById('newTurnBtn').addEventListener('click', () => {
+  players.forEach(p => { p.action=false; p.bonus=false; p.reaction=false; p.speedUsed=0; });
+  render();
+});
+
+addPlayer('Player 1', 30);
+addPlayer('Player 2', 30);
+</script>
+</body>
+</html>
